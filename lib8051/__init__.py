@@ -1,0 +1,1 @@
+from opcode_8051 import decode

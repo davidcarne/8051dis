@@ -1,5 +1,34 @@
 from decutils import *
 
+def decode_ret(pc, opc):
+	return DictProxy(
+				addr = pc,
+				dests = [],
+				disasm = "ret",
+				length = 1,
+				cycles = 2
+			)
+
+def decode_cjne_a_iram(pc, opc, iram, rel):
+	newpc = pc + sb(rel) + 3
+	return DictProxy(
+				addr = pc,
+				disasm = "cjne a, %#04x, %#04x" % (iram, newpc),
+				dests = [newpc, pc + 3],
+				length = 3,
+				cycles = 2
+			)
+
+def decode_jnz(pc, opc, rel):
+	newpc = pc + sb(rel) + 2
+	return DictProxy(
+				addr = pc,
+				disasm = "jnz %#04x" % (newpc),
+				dests = [newpc, pc + 2],
+				length = 2,
+				cycles = 2
+			)
+
 def decode_jmp(pc, opc):
 	return DictProxy(
 				addr = pc,

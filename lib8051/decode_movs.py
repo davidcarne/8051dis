@@ -1,14 +1,21 @@
 from decutils import *
 
-def decode_mov_a_iram(pc, opc, iram_addr):
-	def runner(state):
-		state.a = state.iram[iram_addr]
-		
+def decode_mov_a_reg(pc, opc):
 	return DictProxy(
 				addr = pc,
-				disasm = "mov a, %#02x" % iram_addr,
+				disasm = "mov a, r%x" % (opc & 0x7),
 				cycles = 1,
-				sim = runner,
+				length = 1,
+				dests = [pc + 1],
+			)
+			
+
+def decode_mov_a_iram(pc, opc, iram):
+
+	return DictProxy(
+				addr = pc,
+				disasm = "mov a, %#04x" % iram,
+				cycles = 1,
 				length = 2,
 				dests = [pc + 2],
 			)

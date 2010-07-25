@@ -1,5 +1,15 @@
 from decutils import *
 
+def decode_dec_iram(pc, opc, addr):
+	return DictProxy(
+				addr = pc,
+				disasm = "dec %#02x"%addr,
+				dests = [pc + 2],
+				cycles = 2,
+				length = 2
+			)
+
+
 def decode_inc_dptr(pc, opc):
 	return DictProxy(
 				addr = pc,
@@ -26,7 +36,16 @@ def decode_add_a_iram(pc, opc, iram_addr):
 			cycles = 1,
 			length = 2
 			)
-			
+
+def decode_addc_a_iram(pc, opc, iram_addr):
+	return DictProxy(
+			addr = pc,
+			disasm = "addc a, %#02x" % iram_addr,
+			dests = [pc + 2],
+			cycles = 1,
+			length = 2
+			)
+						
 def decode_add_a_reg(pc, opc):
 	return DictProxy(
 			addr = pc,
@@ -44,7 +63,15 @@ def decode_add_a_imm(pc, opc, immediate):
 			cycles = 1,
 			length = 2
 			)
-			
+
+def decode_addc_a_imm(pc, opc, immediate):
+	return DictProxy(
+			addr = pc,
+			disasm = "addc a, #%#02x" % immediate,
+			dests = [pc + 2],
+			cycles = 1,
+			length = 2
+			)			
 def decode_cpl_a(pc, opc):
 	return DictProxy(
 			addr = pc,

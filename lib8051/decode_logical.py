@@ -1,5 +1,22 @@
 from decutils import *
 
+def decode_rrc(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = "rrc a",
+		cycles = 1,
+		length = 1,
+		dests = [pc + 1],
+		)
+
+def decode_rr(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = "rr a",
+		cycles = 1,
+		length = 1,
+		dests = [pc + 1],
+		)
 def decode_anl_a_imm(pc, opc, immediate):
 	return DictProxy(
 		addr = pc,

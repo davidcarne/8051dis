@@ -18,7 +18,8 @@ parser = OptionParser()
 parser.add_option("--start-at", dest="start_at", metavar="START", help="start disassembly at offset START in the file", type="int", default=0)
 parser.add_option("--length", dest="length", metavar="LENGTH", help="disassemble max LENGTH bytes", type="int", default=-1)
 parser.add_option("--base-addr", dest="base_addr", metavar="BASE", help="base addr for loaded code", type="int", default=0)
-parser.add_option("--entry_point", dest="entry_point", metavar="BASE", help="entry point for loaded code", type="int", default=-1)
+parser.add_option("--entry-point", dest="entry_point", metavar="BASE", help="entry point for loaded code", type="int", default=-1)
+parser.add_option("--print-trace", dest="print_trace", help="display a trace while running", default=False, action="store_true")
 
 (options, args) = parser.parse_args()
 
@@ -85,6 +86,8 @@ def checkMemState(addr):
 
 
 
+if (options.print_trace):
+	print "Disassembly Trace:"
 q = [entry_point]
 
 c = 0
@@ -125,11 +128,14 @@ while q:
 	for i in xrange(insn.length-1):
 		set_flag(pc + i + 1, BITMAP_INSN_BODY)
 
-	print "%04x\t" % pc + str(insn.disasm)
+	if (options.print_trace):
+		print "%04x\t" % pc + str(insn.disasm)
 	if type(insn.disasm) == str:
 		print "Ran into string-type disassembly"
 		exit()
 
+if (options.print_trace):
+	print "\n\nDisassembled Output:"
 i=base_addr
 while i < (base_addr+dis_len):
 	try:

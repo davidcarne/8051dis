@@ -111,7 +111,6 @@ while q:
 		continue
 	if (ms == "OVERLAP"):
 		print "Error, jumping into the middle of an instruction @ %04x" % pc
-		break;
 
 	try:
 		insn = decode(pc, fetched_mem)

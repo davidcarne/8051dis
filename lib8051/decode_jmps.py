@@ -97,7 +97,16 @@ def decode_jz(pc, opc, reladdr):
 			dests = [newpc, pc+2]
 			)
 			
-			
+def decode_jnc(pc, opc, reladdr):
+	newpc = pc + 2 + sb(reladdr)
+	return DictProxy(
+			addr = pc,
+			disasm = AE("jnc", a_PC(newpc)),
+			cycles = 2,
+			length = 2,
+			dests = [newpc, pc+2]
+			)
+						
 def decode_jnb(pc, opc, bitaddr, reladdr):
 	newpc = pc + 3 + sb(reladdr)
 	return DictProxy(
@@ -107,6 +116,37 @@ def decode_jnb(pc, opc, bitaddr, reladdr):
 			length = 3,
 			dests = [newpc, pc+3]
 			)
+
+def decode_jb(pc, opc, bitaddr, reladdr):
+	newpc = pc + 3 + sb(reladdr)
+	return DictProxy(
+			addr = pc,
+			disasm = AE("jb", a_B(bitaddr), a_PC(newpc)),
+			cycles = 2,
+			length = 3,
+			dests = [newpc, pc+3]
+			)
+
+def decode_jbc(pc, opc, bitaddr, reladdr):
+	newpc = pc + 3 + sb(reladdr)
+	return DictProxy(
+			addr = pc,
+			disasm = AE("jbc", a_B(bitaddr), a_PC(newpc)),
+			cycles = 2,
+			length = 3,
+			dests = [newpc, pc+3]
+			)
+
+
+def decode_nop(pc, op):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("nop"),
+			cycles = 1,
+			length = 1,
+			dests = [pc + 1]
+			)
+
 
 def decode_jc(pc, opc, reladdr):
 	newpc = pc + 2 + sb(reladdr)
@@ -118,7 +158,16 @@ def decode_jc(pc, opc, reladdr):
 			dests = [newpc, pc+2]
 			)
 			
-			
+def decode_cjne_reg_imm(pc, opc, immediate, reladdr):
+	newpc = pc + 3 + sb(reladdr)
+	return DictProxy(
+			addr = pc,
+			disasm = AE("cjne", a_R(opc&7), a_I8(immediate), a_PC(newpc)),
+			cycles = 2,
+			length = 3,
+			dests = [newpc, pc+3]
+			)	
+
 def decode_cjne_ind_imm(pc, opc, immediate, reladdr):
 	newpc = pc + 3 + sb(reladdr)
 	return DictProxy(
@@ -138,3 +187,24 @@ def decode_cjne_a_imm(pc, opc, immediate, reladdr):
 			length = 3,
 			dests = [newpc, pc+3]
 			)
+
+def decode_push(pc, opc, addr):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("push", a_D(addr)),
+			cycles = 2,
+			length = 2,
+			dests = [pc+2]
+			)
+
+def decode_pop(pc, opc, addr):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("pop", a_D(addr)),
+			cycles = 2,
+			length = 2,
+			dests = [pc+2]
+			)
+
+
+

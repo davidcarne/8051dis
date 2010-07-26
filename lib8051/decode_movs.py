@@ -67,6 +67,16 @@ def decode_mov_iram_reg(pc, opc, iram_addr):
 				dests = [pc + 2],
 			)
 
+def decode_mov_reg_iram(pc, opc, iram_addr):
+	return DictProxy(
+				addr = pc,
+				#disasm = "mov %#02x, r%x" % (iram_addr, opc & 0x7),
+				disasm = AE("mov", a_R(opc & 0x7), a_D(iram_addr)),
+				cycles = 2,
+				length = 2,
+				dests = [pc + 2],
+			)
+
 def decode_mov_iram_a(pc, opc, iram_addr):
 	return DictProxy(
 				addr = pc,
@@ -156,4 +166,22 @@ def decode_movx_a_ind(pc, opc):
 				cycles = 2,
 				length = 1,
 				dests = [pc + 1],
+				)
+
+def decode_mov_c_bitaddr(pc, opc, bitaddr):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("mov", a_C(), a_B(bitaddr)),
+				cycles = 2,
+				length = 2,
+				dests = [pc + 2],
+				)
+
+def decode_mov_bitaddr_c(pc, opc, bitaddr):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("mov",  a_B(bitaddr), a_C()),
+				cycles = 2,
+				length = 2,
+				dests = [pc + 2],
 				)

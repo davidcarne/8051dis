@@ -53,7 +53,7 @@ def decode(pc, bytes):
 	if opc == 0xb6 or opc == 0xb7:
 		return decode_cjne_ind_imm(pc, opc, bytes[1], bytes[2])
 	if opc >= 0xb8 and opc <= 0xbf:
-		return decode_cjne_ind_imm(pc, opc, bytes[1], bytes[2])
+		return decode_cjne_reg_imm(pc, opc, bytes[1], bytes[2])
 	
 	if opc == 0xC2:
 		return decode_clr_bit(pc, opc, bytes[1])
@@ -72,8 +72,12 @@ def decode(pc, bytes):
 	if opc == 0xD4:
 		return decode_da(pc, opc)
 	
-	if opc == 0x14 or opc >= 0x16 and opc <= 0x1F:
-		return decode_dec(pc, opc)
+	if opc == 0x14:
+		return decode_dec_a(pc, opc)
+	if opc >= 0x16 and opc <= 0x17:
+		return decode_dec_ind(pc, opc)
+	if opc >= 0x18 and opc <= 0x1F:
+		return decode_dec_reg(pc, opc)
 	if opc == 0x15:
 		return decode_dec_iram(pc, opc, bytes[1])
 	if opc == 0x84:
@@ -177,6 +181,8 @@ def decode(pc, bytes):
 		return decode_orl_c(pc, opc, bytes[1])
 	if opc == 0xC0:
 		return decode_push(pc, opc, bytes[1])
+	if opc == 0xD0:
+		return decode_pop(pc, opc, bytes[1])
 	if opc == 0x22:
 		return decode_ret(pc, opc)
 	if opc == 0x32:
@@ -202,7 +208,7 @@ def decode(pc, bytes):
 	if opc >= 0x96 and opc <= 0x97:
 		return decode_subb_ind(pc, opc)
 	if opc >= 0x98 and opc <= 0x9F:
-		return decode_subb_ind(pc, opc)
+		return decode_subb_reg(pc, opc)
 	if opc == 0xC4:
 		return decode_swap(pc, opc)
 	if opc == 0xA5:
@@ -225,3 +231,5 @@ def decode(pc, bytes):
 		return decode_xrl_a_iram(pc, opc, bytes[1])
 	if opc >= 0x66 and opc <= 0x6F:
 		return decode_xrl_a_xx(pc, opc)
+
+	raise NotImplementedError, "Opcode %02x" % opc

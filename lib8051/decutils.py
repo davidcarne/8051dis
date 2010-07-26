@@ -90,6 +90,10 @@ class AccumulatorOperand:
 	def __str__(self):
 		return "a"
 
+class ABOperand:
+	def __str__(self):
+		return "ab"
+
 class CarryFlagOperand:
 	def __str__(self):
 		return "c"
@@ -104,6 +108,7 @@ a_R = RegisterOperand
 a_RI = RegisterIndirectAddressingOperand
 a_D = DirectAddressingOperand
 a_A = AccumulatorOperand
+a_AB = ABOperand
 a_C = CarryFlagOperand
 a_B = BitOperand
 a_DPTR = DptrOperand

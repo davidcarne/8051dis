@@ -24,15 +24,6 @@ def decode_anl_a_imm(pc, opc, immediate):
 		dests = [pc + 2],
 		)
 			
-def decode_anl_a_ind(pc, opc):
-	return DictProxy(
-		addr = pc,
-		disasm = AE("anl", a_A(), a_RI(opc&0x1)),
-		cycles = 1,
-		length = 1,
-		dests = [pc + 1],
-		)
-			
 			
 def decode_xrl_a_imm(pc, opc, immediate):
 	return DictProxy(
@@ -42,7 +33,25 @@ def decode_xrl_a_imm(pc, opc, immediate):
 		length = 2,
 		dests = [pc + 2],
 		)
+
+def decode_anl_a_ind(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = AE("anl", a_A(), a_RI(opc&0x1)),
+		cycles = 1,
+		length = 1,
+		dests = [pc + 1],
+		)
 					
+def decode_anl_a_reg(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = AE("anl", a_A(), a_R(opc&0x7)),
+		cycles = 1,
+		length = 1,
+		dests = [pc + 1],
+		)
+						
 def decode_orl_a_imm(pc, opc, immediate):
 	return DictProxy(
 		addr = pc,
@@ -60,7 +69,14 @@ def decode_orl_a_ind(pc, opc):
 		length = 1,
 		dests = [pc + 1],
 		)
-
+def decode_orl_a_reg(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = AE("orl", a_A(), a_R(opc&0x7)),
+		cycles = 1,
+		length = 1,
+		dests = [pc + 1],
+		)
 
 def decode_clr_a(pc, opc):
 	return DictProxy(
@@ -130,6 +146,24 @@ def decode_setb_bitaddr(pc, opc, bitaddr):
 	return DictProxy(
 		addr = pc,
 		disasm = AE("setb", a_B(bitaddr)),
+		length = 2,
+		cycles = 1,
+		dests = [pc + 2]
+		)
+
+def decode_cpl_c(pc, opc):
+	return DictProxy(
+		addr = pc,
+		disasm = AE("cpl", a_C()),
+		length = 1,
+		cycles = 1,
+		dests = [pc + 1]
+		)
+
+def decode_cpl_bitaddr(pc, opc, bitaddr):
+	return DictProxy(
+		addr = pc,
+		disasm = AE("cpl", a_B(bitaddr)),
 		length = 2,
 		cycles = 1,
 		dests = [pc + 2]

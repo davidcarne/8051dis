@@ -1,5 +1,49 @@
 from decutils import *
 
+def decode_mul(pc, opc):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("mul", a_AB()),
+			dests = [pc + 1],
+			cycles = 4,
+			length = 1
+			)
+	
+def decode_subb_reg(pc, opc):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("subb", a_A(), a_R(opc & 0x7)),
+			dests = [pc + 1],
+			cycles = 1,
+			length = 1
+			)
+
+def decode_subb_iram(pc, opc, addr):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("subb", a_A(), a_D(addr)),
+			dests = [pc + 2],
+			cycles = 1,
+			length = 2
+			)
+
+def decode_subb_ind(pc, opc):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("subb", a_A(), a_RI(opc & 0x1)),
+			dests = [pc + 1],
+			cycles = 1,
+			length = 1
+			)
+
+def decode_subb_imm(pc, opc, imm):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("subb", a_A(), a_I8(imm)),
+			dests = [pc + 2],
+			cycles = 1,
+			length = 2
+			)
 
 def decode_inc_iram(pc, opc, addr):
 	return DictProxy(
@@ -34,6 +78,32 @@ def decode_inc_reg(pc, opc):
 	return DictProxy(
 				addr = pc,
 				disasm = AE("inc", a_R(opc&0x7)),
+				dests = [pc + 1],
+				cycles = 1,
+				length = 1
+			)
+
+def decode_dec_reg(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("dec", a_R(opc&0x7)),
+				dests = [pc + 1],
+				cycles = 1,
+				length = 1
+			)
+def decode_dec_ind(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("dec", a_RI(opc&0x1)),
+				dests = [pc + 1],
+				cycles = 1,
+				length = 1
+			)
+
+def decode_dec_a(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("dec", a_A()),
 				dests = [pc + 1],
 				cycles = 1,
 				length = 1
@@ -88,3 +158,5 @@ def decode_cpl_a(pc, opc):
 			cycles = 1,
 			length = 1
 			)
+
+

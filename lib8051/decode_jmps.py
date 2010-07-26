@@ -4,7 +4,7 @@ def decode_ret(pc, opc):
 	return DictProxy(
 				addr = pc,
 				dests = [],
-				disasm = "ret",
+				disasm = AE("ret"),
 				length = 1,
 				cycles = 2
 			)
@@ -13,7 +13,7 @@ def decode_cjne_a_iram(pc, opc, iram, rel):
 	newpc = pc + sb(rel) + 3
 	return DictProxy(
 				addr = pc,
-				disasm = "cjne a, %#04x, %#04x" % (iram, newpc),
+				disasm = AE("cjne", a_A(), a_D(iram), a_PC(newpc)),
 				dests = [newpc, pc + 3],
 				length = 3,
 				cycles = 2
@@ -23,7 +23,7 @@ def decode_jnz(pc, opc, rel):
 	newpc = pc + sb(rel) + 2
 	return DictProxy(
 				addr = pc,
-				disasm = "jnz %#04x" % (newpc),
+				disasm = AE("jnz", a_PC(newpc)),
 				dests = [newpc, pc + 2],
 				length = 2,
 				cycles = 2
@@ -32,7 +32,7 @@ def decode_jnz(pc, opc, rel):
 def decode_jmp(pc, opc):
 	return DictProxy(
 				addr = pc,
-				disasm = "jmp @a + dptr",
+				disasm = AE("jmp", a_PMAI(False)),
 				dests = [],
 				cycles = 2,
 				length = 1
@@ -44,7 +44,7 @@ def decode_ljmp(pc, opc, addrh, addrl):
 		state.pc = newpc
 	return DictProxy(
 				addr = pc,
-				disasm = "ljmp %#04x" % newpc,
+				disasm = AE("ljmp", a_PC(newpc)),
 				dests = [newpc],
 				cycles = 2,
 				sim = runner,
@@ -57,7 +57,7 @@ def decode_lcall(pc, opc, addrh, addrl):
 		state.pc = newpc
 	return DictProxy(
 				addr = pc,
-				disasm = "ljmp %#04x" % newpc,
+				disasm = AE("lcall", a_PC(newpc)),
 				dests = [newpc, pc+3],
 				cycles = 2,
 				sim = runner,
@@ -70,7 +70,7 @@ def decode_sjmp(pc, opc, reladdr):
 		state.pc = newpc
 	return DictProxy(
 				addr = pc,
-				disasm = "sjmp %#04x" % newpc,
+				disasm = AE("sjmp", a_PC(newpc)),
 				dests = [newpc],
 				cycles = 2,
 				sim = runner,
@@ -81,7 +81,7 @@ def decode_djnz_reg(pc, opc, reladdr):
 	newpc = (pc + 2 + sb(reladdr))
 	return DictProxy(
 				addr = pc,
-				disasm = "djnz r%d, %#04x" % (opc&0x7, newpc),
+				disasm = AE("djnz", a_R(opc&0x7), a_PC(newpc)),
 				dests = [newpc, pc + 2],
 				cycles = 2,
 				length = 2
@@ -91,7 +91,7 @@ def decode_jz(pc, opc, reladdr):
 	newpc = pc + 2 + sb(reladdr)
 	return DictProxy(
 			addr = pc,
-			disasm = "jz %#04x" % (newpc),
+			disasm = AE("jz", a_PC(newpc)),
 			cycles = 2,
 			length = 2,
 			dests = [newpc, pc+2]
@@ -102,7 +102,7 @@ def decode_jnb(pc, opc, bitaddr, reladdr):
 	newpc = pc + 3 + sb(reladdr)
 	return DictProxy(
 			addr = pc,
-			disasm = "jnb %02x.%d, %#04x" % (bitaddr>>3, bitaddr&7, newpc),
+			disasm = AE("jnb", a_B(bitaddr), a_PC(newpc)),
 			cycles = 2,
 			length = 3,
 			dests = [newpc, pc+3]
@@ -112,7 +112,7 @@ def decode_jc(pc, opc, reladdr):
 	newpc = pc + 2 + sb(reladdr)
 	return DictProxy(
 			addr = pc,
-			disasm = "jc %#04x" % (newpc),
+			disasm = AE("jc", a_PC(newpc)),
 			cycles = 2,
 			length = 2,
 			dests = [newpc, pc+2]
@@ -123,7 +123,7 @@ def decode_cjne_ind_imm(pc, opc, immediate, reladdr):
 	newpc = pc + 3 + sb(reladdr)
 	return DictProxy(
 			addr = pc,
-			disasm = "cjne @r%d, #%#02x, %#04x" % (opc&1, immediate, newpc),
+			disasm = AE("cjne", a_RI(opc&1), a_I8(immediate), a_PC(newpc)),
 			cycles = 2,
 			length = 3,
 			dests = [newpc, pc+3]
@@ -133,7 +133,7 @@ def decode_cjne_a_imm(pc, opc, immediate, reladdr):
 	newpc = pc + 3 + sb(reladdr)
 	return DictProxy(
 			addr = pc,
-			disasm = "cjne a, #%#02x, %#04x" % (immediate, newpc),
+			disasm = AE("cjne", a_A(), a_I8(immediate), a_PC(newpc)),
 			cycles = 2,
 			length = 3,
 			dests = [newpc, pc+3]

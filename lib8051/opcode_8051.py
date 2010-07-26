@@ -18,13 +18,13 @@ def decode(pc, bytes):
 		return decode_add_a_iram(pc, opc, bytes[1])
 		
 	if opc == 0x36 or opc == 0x37:
-		return decode_addc_a_ind(pc, opc)
+		return decode_add_a_ind(pc, opc, carry=True)
 	if opc >= 0x38 and opc <= 0x3F:
-		return decode_addc_a_reg(pc, opc)
+		return decode_add_a_reg(pc, opc, carry=True)
 	if opc == 0x34:
-		return decode_addc_a_imm(pc, opc, bytes[1])
+		return decode_add_a_imm(pc, opc, bytes[1], carry=True)
 	if opc == 0x35:
-		return decode_addc_a_iram(pc, opc, bytes[1])
+		return decode_add_a_iram(pc, opc, bytes[1], carry=True)
 		
 		
 	# 2 byte AJMP
@@ -90,7 +90,7 @@ def decode(pc, bytes):
 	if opc >= 0x08 and opc <= 0x0F:
 		return decode_inc_reg(pc, opc)
 	if opc == 0x05:
-		return decode_dec_iram(pc, opc, bytes[1])
+		return decode_inc_iram(pc, opc, bytes[1])
 	if opc == 0xA3:
 		return decode_inc_dptr(pc, opc)
 	if opc == 0x20:
@@ -182,13 +182,13 @@ def decode(pc, bytes):
 	if opc == 0x32:
 		return decode_reti(pc, opc)
 	if opc == 0x23:
-		return decode_rl(pc, opc)
+		return decode_generic_rotate(pc, opc)
 	if opc == 0x33:
-		return decode_rlc(pc, opc)
+		return decode_generic_rotate(pc, opc)
 	if opc == 0x03:
-		return decode_rr(pc, opc)
+		return decode_generic_rotate(pc, opc)
 	if opc == 0x13:
-		return decode_rrc(pc, opc)
+		return decode_generic_rotate(pc, opc)
 	if opc == 0xD3:
 		return decode_setb_c(pc, opc)
 	if opc == 0xD2:

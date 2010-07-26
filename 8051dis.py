@@ -70,12 +70,14 @@ while q:
 	aflags[pc] = 1
 	for i in xrange(insn.length-1):
 		aflags[pc+i+1] = 2
-	print "%04x\t" % pc + insn.disasm
+	print "%04x\t" % pc + str(insn.disasm)
+	if type(insn.disasm) == str:
+		exit()
 
 i=0
 while i < len(f):
 	try:
-		decoding = insns[i].disasm
+		decoding = str(insns[i].disasm)
 		l = insns[i].length
 	except KeyError:
 		decoding = ".db %02x" % f[i]

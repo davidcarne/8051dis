@@ -109,9 +109,10 @@ while q:
 	ms = checkMemState(pc)
 	if (ms == "FOUND"):
 		continue
+
 	if (ms == "OVERLAP"):
 		print "Error, jumping into the middle of an instruction @ %04x" % pc
-
+		
 	try:
 		insn = decode(pc, fetched_mem)
 	except NameError, q:

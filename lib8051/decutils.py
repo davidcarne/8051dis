@@ -5,11 +5,11 @@ class DictProxy(object):
 				if x > args["pc"] and x < args["pc"] + args["length"]:
 					print "INVALID DEST!!!"
 					exit(1)
-		self.d = args
-		return self.__dict__.update(args)
+		self.d = args.keys()
+		self.__dict__.update(args)
 
 	def __repr__(self):
-		return str(self.d)
+		return str(dict( [(i,self.__dict__[i]) for i in self.d if i in self.__dict__ ]  ))
 
 
 def sb(x):
@@ -63,14 +63,14 @@ class ImmediateOperand8:
 		assert constant >= 0 and constant < 256
 		self.constant = constant
 	def __str__(self):
-		return "#%#02x" % self.constant
+		return "#0x%02x" % self.constant
 
 class ImmediateOperand16:
 	def __init__(self, constant):
 		assert constant >= 0 and constant < 65536
 		self.constant = constant
 	def __str__(self):
-		return "#%#02x" % self.constant
+		return "#0x%04x" % self.constant
 
 class BitOperand:
 	def __init__(self, bit_and_addr):
@@ -120,7 +120,7 @@ a_PMAI = ProgramMemoryIndirectAddressingOperand
 
 a_PC = PCJmpDestination
 
-class AssemblyEncoding:
+class AssemblyEncoding(object):
 	def __init__(self, opcode, *operands):
 		self.opcode = opcode
 		self.operands = operands

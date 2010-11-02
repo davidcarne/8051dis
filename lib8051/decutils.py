@@ -73,7 +73,7 @@ class ImmediateOperand16:
 		return "#0x%04x" % self.constant
 
 class BitOperand:
-	def __init__(self, bit_and_addr):
+	def __init__(self, bit_and_addr, inv=False):
 		bit = bit_and_addr & 0x7
 		byte = bit_and_addr & 0xF8
 		if (byte < 0x80):
@@ -83,8 +83,10 @@ class BitOperand:
 
 		self.addr = addr
 		self.bit = bit
+		self.invflag = inv
+
 	def __str__(self):
-		return "(%#02x.%d)" % (self.addr, self.bit)
+		return "%s(%#02x.%d)" % ("/" if self.invflag else "", self.addr, self.bit)
 
 class AccumulatorOperand:
 	def __str__(self):

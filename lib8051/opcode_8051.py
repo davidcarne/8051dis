@@ -6,7 +6,7 @@ def decode(pc, bytes):
 	opc = bytes[0]
 	# 2 byte ACALL
 	if opc & 0x1F == 0x11:
-		return decode_acall(pc, opc, bytes[1])
+		return decode_acall_ajmp(pc, opc, bytes[1])
 
 	if opc == 0x26 or opc == 0x27:
 		return decode_add_a_ind(pc, opc)
@@ -29,7 +29,7 @@ def decode(pc, bytes):
 		
 	# 2 byte AJMP
 	if opc & 0x1F == 0x01:
-		return decode_ajmp(pc, opc, bytes[1])
+		return decode_acall_ajmp(pc, opc, bytes[1])
 		
 	if opc == 0x52:
 		return decode_anl_iram_a(pc, opc, bytes[1])

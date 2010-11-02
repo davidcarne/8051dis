@@ -1,10 +1,31 @@
 from decutils import *
 
+def decode_acall_ajmp(pc, opc, addrl):
+	calc_addr = ((pc + 2) & 0xF800) + ((opc & 0xE0) << 3) + addrl
+	wtype = "call" if opc & 0x10 else "jmp"
+
+	return DictProxy(
+				addr = pc,
+				dests = [],
+				disasm = AE("a%s" % wtype, a_PC(calc_addr)),
+				length = 2,
+				cycles = 2
+			)
+
 def decode_ret(pc, opc):
 	return DictProxy(
 				addr = pc,
 				dests = [],
 				disasm = AE("ret"),
+				length = 1,
+				cycles = 2
+			)
+
+def decode_reti(pc, opc):
+	return DictProxy(
+				addr = pc,
+				dests = [],
+				disasm = AE("reti"),
 				length = 1,
 				cycles = 2
 			)

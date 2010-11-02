@@ -91,6 +91,14 @@ def decode_div(pc, opc):
 				cycles = 4,
 				length = 1
 			)
+def decode_inc_a(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("inc", a_A()),
+				dests = [pc + 1],
+				cycles = 1,
+				length = 1
+			)
 
 def decode_inc_ind(pc, opc):
 	return DictProxy(
@@ -177,4 +185,14 @@ def decode_cpl_a(pc, opc):
 			length = 1
 			)
 
+
+def decode_da(pc, opc):
+	return DictProxy(
+			addr = pc,
+			disasm = AE("da", a_A()),
+			dests = [pc + 1],
+			cycles = 1,
+			length = 1
+			)
+		
 

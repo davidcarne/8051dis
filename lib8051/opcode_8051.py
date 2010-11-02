@@ -229,7 +229,9 @@ def decode(pc, bytes):
 		return decode_xrl_a_imm(pc, opc, bytes[1])
 	if opc == 0x65:
 		return decode_xrl_a_iram(pc, opc, bytes[1])
-	if opc >= 0x66 and opc <= 0x6F:
-		return decode_xrl_a_xx(pc, opc)
+	if opc >= 0x66 and opc <= 0x67:
+		return decode_xrl_a_ind(pc, opc)
+	if opc >= 0x68 and opc <= 0x6F:
+		return decode_xrl_a_reg(pc, opc)
 
 	raise NotImplementedError, "Opcode %02x" % opc

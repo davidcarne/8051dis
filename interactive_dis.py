@@ -133,6 +133,23 @@ def main(args):
 			c=chr(c)
 			# Q or q exits
 			if c in 'Qq': break
+			if c == 'A':
+				def fileExistsValidator(f):
+					try:
+						open(f,"r")
+					except IOError:
+						return False
+					return True
+				
+				res = cursG.dialog.doInputDialog(stdscr, [
+							cursG.dialog.InputField("fname","FileName", validator=fileExistsValidator)
+							],
+							fld_w = 80
+							)
+
+				if (res != None):
+					idis.tools.addIHex(ds, res["fname"])
+
 
 			if c == 'a':
 				def fileExistsValidator(f):

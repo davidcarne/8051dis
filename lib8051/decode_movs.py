@@ -36,7 +36,17 @@ def decode_mov_a_imm(pc, opc, immediate):
 				length = 2,
 				dests = [pc + 2],
 			)
-			
+
+def decode_mov_a_ind(pc, opc):	
+	return DictProxy(
+				addr = pc,
+				#disasm = "mov a, #%#02x" % immediate,
+				disasm = AE("mov", a_A(), a_RI(opc & 0x1)),
+				cycles = 1,
+				length = 1,
+				dests = [pc + 1],
+			)
+
 def decode_mov_iram_iram(pc, opc, iram_1_addr, iram_2_addr):
 	return DictProxy(
 				addr = pc,

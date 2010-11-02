@@ -86,7 +86,15 @@ def decode_djnz_reg(pc, opc, reladdr):
 				cycles = 2,
 				length = 2
 			)
-			
+def decode_djnz_iram(pc, opc, iram, reladdr):
+	newpc = (pc + 2 + sb(reladdr))
+	return DictProxy(
+				addr = pc,
+				disasm = AE("djnz", a_D(iram), a_PC(newpc)),
+				dests = [newpc, pc + 4],
+				cycles = 2,
+				length = 3
+			)			
 def decode_jz(pc, opc, reladdr):
 	newpc = pc + 2 + sb(reladdr)
 	return DictProxy(

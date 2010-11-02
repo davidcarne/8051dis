@@ -83,6 +83,24 @@ def decode_inc_reg(pc, opc):
 				length = 1
 			)
 
+def decode_div(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("div", a_AB()),
+				dests = [pc + 1],
+				cycles = 4,
+				length = 1
+			)
+
+def decode_inc_ind(pc, opc):
+	return DictProxy(
+				addr = pc,
+				disasm = AE("inc", a_RI(opc&0x1)),
+				dests = [pc + 1],
+				cycles = 1,
+				length = 1
+			)
+
 def decode_dec_reg(pc, opc):
 	return DictProxy(
 				addr = pc,

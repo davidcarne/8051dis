@@ -156,7 +156,29 @@ def addIHex(ds, file):
 		mi.cdict["is_default"] = True
 		ds[addr] = mi
 
-	
+def rebuildClean(ds):
+	cleanlist = []
+	for i in ds:
+		if "insn" in i.cdict:
+			for j in xrange(i.length-1):
+				if i.addr + j + 1 in ds:
+					cleanlist .append( i.addr + j + 1)
+	for i in cleanlist:
+		del ds[i]
+
+def rebuild(ds):
+	for i in ds:
+		if "insn" in i.cdict:
+			fetched_mem = ds.readBytes(i.addr,6)	
+			insn = lib8051.decode(i.addr, fetched_mem)
+			
+			if (insn.length != i.length):
+				raise ValueError, "New instruction length, can't rebuild"
+
+			i.disasm = insn.disasm
+			i.cdict["insn"] = insn
+		
+
 def codeFollow(ds, entry_point):
 	from types import FunctionType
 	q = [entry_point]
@@ -199,7 +221,7 @@ def codeFollow(ds, entry_point):
 		m.cdict["insn"] = insn
 		m.cdict["is_default"] = False
 				
-
+		
 		for i in xrange(insn.length-1):
 			try:
 				del ds[pc + i + 1]
@@ -216,10 +238,11 @@ def xrefsPass(ds):
 			insn = ds[i].cdict["insn"]
 			dests = insn.dests
 		except KeyError: continue
+		
 		for j in dests:
 			if j == insn.addr + insn.length: continue
 			try:
-				ds[j].xrefs.append(i)
+				ds[j].xrefs.append((i, ds[i].cdict["insn"].disasm.opcode))
 			except KeyError:
 				pass
 def labelsPass(ds):

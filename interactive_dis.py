@@ -1,5 +1,19 @@
 #!/usr/bin/python
 
+################ PM hack #########################
+import sys
+def dbghook(type, value, tb):
+	import traceback, pdb
+
+	traceback.print_exception(type, value, tb)
+
+	print
+	pdb.pm()
+sys.excepthook = dbghook
+############### END PM HACK ######################
+
+
+
 import curses
 import curses.ascii
 import curses.textpad
@@ -112,6 +126,7 @@ def main(args):
 			IND_DSTMARK:curses.color_pair(COLOR_GREEN_ON_BLUE) | curses.A_BOLD,
 			}
 
+	locations = []
 	db = AssemblerDisplay(stdscr, ds, colors_nohil, colors_hil)
 
 	while 1:
@@ -130,6 +145,7 @@ def main(args):
 		stdscr.refresh()
 		c=stdscr.getch()
 		if 0<c<256:
+			c_h = c
 			c=chr(c)
 			# Q or q exits
 			if c in 'Qq': break
@@ -150,6 +166,29 @@ def main(args):
 				if (res != None):
 					idis.tools.addIHex(ds, res["fname"])
 
+			
+
+			if c == 'r':
+				idis.tools.rebuild(ds)
+				
+			if c == 'R':
+				idis.tools.rebuildClean(ds)
+			
+			if c == 'g':
+				
+				res = cursG.dialog.doInputDialog(stdscr, [
+							cursG.dialog.InputField("addr","Address", "0x%04x" % db.seladdr, validator=cursG.dialog.intValidator) ] )
+
+				if res:	
+					loc = int(res["addr"], 0)
+					locations.append((db.seladdr, db.window_base))
+					db.seladdr = loc
+					db.window_base = loc
+
+			if c_h == 0x7f:
+				try:
+					(db.seladdr, db.window_base) = locations.pop()
+				except IndexError: pass
 
 			if c == 'a':
 				def fileExistsValidator(f):
@@ -188,6 +227,7 @@ def main(args):
 				if c == '\n':
 					naddr = idis.tools.follow(ds,db.seladdr)
 					if naddr != None:
+						locations.append((db.seladdr, db.window_base))
 						db.seladdr = naddr
 						db.window_base = db.seladdr
 
@@ -196,8 +236,11 @@ def main(args):
 
 				if c == 'v':
 					d = ds[db.seladdr].cdict
-					fields = [ cursG.dialog.InputField(i[0], i[0], str(i[1])) for i in d.iteritems() ]
-					cursG.dialog.doInputDialog(stdscr, fields)
+
+					#fields = [ cursG.dialog.InputField(i[0], i[0], str(i[1])) for i in d.iteritems() ]
+					#cursG.dialog.doInputDialog(stdscr, fields)
+					#takeInput(stdscr, ds[db.seladdr].comment, 4)
+
 				if c == ";":	
 					ds[db.seladdr].comment = takeInput(stdscr, ds[db.seladdr].comment, 4)
 

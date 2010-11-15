@@ -24,8 +24,18 @@ class AssemblerDisplay:
 		self.colors_hil = colors_hil
 
 		self.scr.bkgd(' ', self.colors_nohil[IND_ADDR])
-		self.seladdr = None
+
+		scr = self.scr
+
+
 		self.window_base = None
+
+	def addstr(self, y, x, msg, col):
+		my,mx = self.scr.getmaxyx()
+		if y>= my - 1:
+			raise ValueError, "Y out of range"
+
+		self.scr.addstr(y, x, msg, col)
 
 	addrCol = 2
 	labelCol = 8
@@ -91,7 +101,7 @@ class AssemblerDisplay:
 		# Draw the highlighted background
 		if (selected):
 			for i in xrange(linesToDraw):
-				self.scr.addstr(line+i,1, " " * (x-2), lcol[IND_ADDR])
+				self.addstr(line+i,1, " " * (x-2), lcol[IND_ADDR])
 		
 		for i in xrange(linesToDraw):
 			if (selected): self.scr.addch(line+i,1, '!', lcol[IND_HSEL])
@@ -100,21 +110,21 @@ class AssemblerDisplay:
 
 		# Draw the address for each line
 		for i in xrange(linesToDraw):
-			self.scr.addstr(line+i,self.addrCol, "%04X" % meminfo.addr, lcol[IND_ADDR])
+			self.addstr(line+i,self.addrCol, "%04X" % meminfo.addr, lcol[IND_ADDR])
 
 		if meminfo.xrefs:
 			for lnum,xref in enumerate(meminfo.xrefs):
-				if lnum > linesToDraw: break
-				self.scr.addstr(line + lnum+1, self.xrefCol,"[xref %04x]"%xref, lcol[IND_XREF])
+				if lnum + 1 >= linesToDraw: break
+				self.addstr(line + lnum+1, self.xrefCol,"[xref %s %04x]"%(xref[1], xref[0]), lcol[IND_XREF])
 
 		if meminfo.label:
 			if meminfo.xrefs:
 				lineToDrawLabelOn = len(meminfo.xrefs) - 1 + 1
 			else:
 				lineToDrawLabelOn = 1
-			if lineToDrawLabelOn > linesToDraw: return linesToDraw
+			if lineToDrawLabelOn >= linesToDraw: return linesToDraw
 			
-			self.scr.addstr(line + lineToDrawLabelOn, self.labelCol,"%s:" % meminfo.label , lcol[IND_LABEL])
+			self.addstr(line + lineToDrawLabelOn, self.labelCol,"%s:" % meminfo.label , lcol[IND_LABEL])
 
 
 		# Draw the disassembly
@@ -125,13 +135,13 @@ class AssemblerDisplay:
 		if type(meminfo.disasm) == str:
 			raise ValueError, meminfo.disasm
 
-		self.scr.addstr(line + disasmLine, self.opcodeCol, meminfo.disasm.opcode, lcol[IND_DISASM_OPC])
+		self.addstr(line + disasmLine, self.opcodeCol, meminfo.disasm.opcode, lcol[IND_DISASM_OPC])
 
 		cpos = self.operandCol
 		first = True
 		for i in meminfo.disasm.operands:
 			if not first:
-				self.scr.addstr(line + disasmLine, cpos, "," , lcol[IND_DISASM_PUNC])
+				self.addstr(line + disasmLine, cpos, "," , lcol[IND_DISASM_PUNC])
 				cpos += 2
 			first = False
 
@@ -147,15 +157,15 @@ class AssemblerDisplay:
 					if l: toDraw = l
 				except KeyError: pass
 
-			self.scr.addstr(line + disasmLine, cpos, toDraw , draw_col)
+			self.addstr(line + disasmLine, cpos, toDraw , draw_col)
 
 			cpos += len(toDraw)
 
 		# Draw the comment
 		for lnum, cline in enumerate(formatted_comment):
 			lnum += disasmLine
-			if lnum > linesToDraw: return linesToDraw
-			self.scr.addstr(line + lnum, self.commentCol,"; %s" % cline , lcol[IND_COMMENT])
+			if lnum >= linesToDraw: return linesToDraw
+			self.addstr(line + lnum, self.commentCol,"; %s" % cline , lcol[IND_COMMENT])
 		return linesToDraw
 
 	def redraw(self):

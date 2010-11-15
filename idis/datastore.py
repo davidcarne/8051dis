@@ -52,6 +52,25 @@ class DataStore:
 				(base_addr INTEGER CONSTRAINT base_addr_pk PRIMARY KEY,
 				obj BLOB)''')
 
+	def __iter__(self):
+		addrs = self.c.execute('''SELECT addr 
+					FROM memory_info''').fetchall()
+		addrs = [i[0] for i in addrs]
+
+		class DataStoreIterator:
+			def __init__(self, src, addrs):
+				self.src = src
+				self.addrs = addrs
+			def next(self):
+				if not self.addrs:
+					raise StopIteration
+
+				v = self.src[self.addrs[0]]
+				self.addrs = self.addrs[1:]
+				return v
+
+		return DataStoreIterator(self, addrs)
+
 	def __contains__(self, addr):
 		if addr in self.memory_info_cache:
 			return self.memory_info_cache[addr] != None
@@ -113,7 +132,11 @@ class DataStore:
 		   	  (addr,dbstr))
 
 	def __delitem__(self, addr):
-		del self.memory_info_cache[addr]
+		try:
+			del self.memory_info_cache[addr]
+		except KeyError:
+			pass
+
 		self.c.execute('''DELETE FROM memory_info WHERE addr=?''',
 		   	  (addr,))
 

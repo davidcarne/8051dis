@@ -156,6 +156,20 @@ def addIHex(ds, file):
 		mi.cdict["is_default"] = True
 		ds[addr] = mi
 
+
+def undefine(ds, addr):
+	l = ds[addr].length
+
+
+	del ds[addr]
+
+	for i in xrange(addr, addr+l):
+		value = ds.readBytes(i)[0]
+		mi = MemoryInfo("", i, 1, AE(".db 0x%02x"%value))
+		mi.cdict["is_default"] = True
+		ds[i] = mi
+
+
 def rebuildClean(ds):
 	cleanlist = []
 	for i in ds:

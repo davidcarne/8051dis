@@ -230,6 +230,8 @@ def main(args):
 						locations.append((db.seladdr, db.window_base))
 						db.seladdr = naddr
 						db.window_base = db.seladdr
+				if c == 'u':
+					idis.tools.undefine(ds, db.seladdr)
 
 				if c == 'c':
 					idis.tools.codeFollow(ds, db.seladdr)

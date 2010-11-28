@@ -1,12 +1,24 @@
+Simple curses-based interactive disassembler for working with 8051 processors
+
+
 Commands:
+	A - add intel hex 
+	a - add binary
+
 	c - code follow
+	g - goto
 	v - view custom props
 	; - set end-of-line comment
 	l - set label
-
+	Backspace - go back [returns from goto / follow jump]
 	X - trigger xrefs pass
 	L - trigger labels pass
 
 	[UP] - scroll up
 	[DOWN] - scroll down
 	[ENTER] - follow jump
+
+Internal Commands:
+	r - rebuild disassembly [development tool]
+	R - rebuild disassembly and clean overlapping locations [development tool]
+

@@ -253,7 +253,7 @@ class CursesGui(object):
 					if display_win.seladdr != None and display_win.seladdr in ds:
 						if c == '\n':
 							naddr = idis.tools.follow(ds,display_win.seladdr)
-							if naddr != None:
+							if naddr != None and naddr in ds:
 								locations.append((display_win.seladdr, display_win.window_base))
 								display_win.seladdr = naddr
 								display_win.window_base = display_win.seladdr

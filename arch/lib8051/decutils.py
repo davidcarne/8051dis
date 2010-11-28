@@ -1,18 +1,23 @@
 from arch.shared_opcode_types import *
 from arch.shared_mem_types import *
 
-class DictProxy(object):
+class DictProxy(dict):
 	def __init__(self,**args):
-		if "length" in args and "dests" in args and "pc" in args:
+		if __debug__ and "length" in args and "dests" in args and "pc" in args:
 			for x in args["dests"]:
-				if x > args["pc"] and x < args["pc"] + args["length"]:
-					print "INVALID DEST!!!"
-					exit(1)
-		self.d = args.keys()
-		self.__dict__.update(args)
-
-	def __repr__(self):
-		return str(dict( [(i,self.__dict__[i]) for i in self.d if i in self.__dict__ ]  ))
+				assert not ( x > args["pc"] and x < args["pc"] + args["length"])
+			
+		dict.__init__(self, args)
+		self["typeclass"] = "code"
+		self["typename"] = "8051"
+		
+		# Kill off the simulator
+		try:
+			del self["sim"]
+		except KeyError: pass
+		
+	#def __repr__(self):
+	#	return str(dict( [(i,self.__dict__[i]) for i in self.d if i in self.__dict__ ]  ))
 
 
 def sb(x):

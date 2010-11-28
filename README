@@ -10,6 +10,8 @@ Commands:
 	v - view custom props
 	; - set end-of-line comment
 	l - set label
+	u - undefine
+	s - memory as type "string"
 	Backspace - go back [returns from goto / follow jump]
 	X - trigger xrefs pass
 	L - trigger labels pass
@@ -21,4 +23,14 @@ Commands:
 Internal Commands:
 	r - rebuild disassembly [development tool]
 	R - rebuild disassembly and clean overlapping locations [development tool]
+
+
+HACKING GUIDE
+arch          Disassemblers for different architectures, and arch-common code
+gui/curses    old curses gui [deprecated]
+gui/qt        new QT gui [not yet in existence]
+idis          common code
+
+PLAN - stabilize / cleanup disassembler + code system, write importer to bring database from old version to new
+     - write QT gui awesomeness; maybe bring in some bits / concepts from dismember?
 

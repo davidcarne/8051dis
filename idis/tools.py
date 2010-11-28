@@ -1,5 +1,7 @@
-import lib8051
-from lib8051.decutils import *
+#import lib8051
+#from lib8051.decutils import *
+from arch.shared_opcode_types import *
+from arch.shared_mem_types import *
 
 class proxy_dict(dict):
 	def __getstate__(self):
@@ -156,7 +158,6 @@ def addIHex(ds, file):
 		mi.cdict["is_default"] = True
 		ds[addr] = mi
 
-
 def undefine(ds, addr):
 	l = ds[addr].length
 
@@ -169,8 +170,7 @@ def undefine(ds, addr):
 		mi.cdict["is_default"] = True
 		ds[i] = mi
 
-
-def rebuildClean(ds):
+def clean(ds):
 	cleanlist = []
 	for i in ds:
 		if "insn" in i.cdict:
@@ -180,11 +180,11 @@ def rebuildClean(ds):
 	for i in cleanlist:
 		del ds[i]
 
-def rebuild(ds):
+def rebuild(ds, arch):
 	for i in ds:
 		if "insn" in i.cdict:
 			fetched_mem = ds.readBytes(i.addr,6)	
-			insn = lib8051.decode(i.addr, fetched_mem)
+			insn = arch.decode(i.addr, fetched_mem)
 			
 			if (insn.length != i.length):
 				raise ValueError, "New instruction length, can't rebuild"
@@ -192,8 +192,25 @@ def rebuild(ds):
 			i.disasm = insn.disasm
 			i.cdict["insn"] = insn
 		
+def decodeAs(ds, dec_type, memaddr):
+	params = getDecoder(dec_type)(ds, memaddr)
+	if not params:
+		return False
+	
+	# Carry over old label and comment
+	old_mem = ds[memaddr]
+	m = MemoryInfo(old_mem.label, memaddr, params["length"], params["disasm"], old_mem.comment)
+	m.cdict["is_default"] = False
+	
+	for i in xrange(params["length"]):
+		try:
+			del ds[memaddr + i]
+		except KeyError:
+			pass
 
-def codeFollow(ds, entry_point):
+	ds[memaddr] = m
+	
+def codeFollow(ds, arch, entry_point):
 	from types import FunctionType
 	q = [entry_point]
 	while q:
@@ -202,27 +219,33 @@ def codeFollow(ds, entry_point):
 		if pc in ds and not ds[pc].cdict["is_default"]:
 			continue
 		
+		
 		try:
 			ds[pc]
 		except KeyError:
 			continue
 
 		try:
-			fetched_mem = ds.readBytes(pc,6)
+			fetched_mem = ds.readBytes(pc,arch.maxInsnLength)
 		except IOError:
 			# If the generated addr is outside of mapped memory, skip it
 			continue
 
-		# HACK 6 repeated 0xFF's = uninited mem
+		# TODO: HACK: 6 repeated 0xFF's = uninited mem
 		if all([i==0xFF for i in fetched_mem]):
 			continue
-
+			
+		insn = arch.decode(pc, fetched_mem)
 		
-		insn = lib8051.decode(pc, fetched_mem)
-
+		# If we can't decoded it, leave as is
+		if not insn:
+			continue
+			
 		q.extend([i for i in insn.dests])
 
-		m = ds[pc]
+		# Carry over old label and comment
+		old_mem = ds[pc]
+		m = MemoryInfo(old_mem.label, pc, insn.length, insn.disasm, old_mem.comment)
 		
 		# Can't serialize this
 		try:
@@ -230,18 +253,18 @@ def codeFollow(ds, entry_point):
 		except AttributeError: pass
 		except KeyError: pass
 
-		m.disasm = insn.disasm
-		m.length = insn.length
 		m.cdict["insn"] = insn
 		m.cdict["is_default"] = False
 				
 		
-		for i in xrange(insn.length-1):
+		for i in xrange(insn.length):
 			try:
-				del ds[pc + i + 1]
+				del ds[pc + i]
 			except KeyError:
 				pass
 
+		ds[pc] = m
+		
 def xrefsPass(ds):
 	# Clear all xrefs
 	for i in ds.addrs():

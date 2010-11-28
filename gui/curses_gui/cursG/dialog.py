@@ -82,13 +82,13 @@ class InputDialog:
 
 	def updateCursor(self):
 		if self.cursor_fld < 0:		
-			curses.curs_set(0)
+			curses_set_cursor(0)
 			return
 		
 		if self.cursor_x > len(self.attrs[self.cursor_fld].valuestr):
 			self.cursor_x = len(self.attrs[self.cursor_fld].valuestr)
 
-		curses.curs_set(1)
+		curses_set_cursor(1)
 		cy = self.cursor_fld + 1
 
 		#print "Cursor at %d %d" % (cy,cx)
@@ -96,7 +96,7 @@ class InputDialog:
 
 	def runloop(self):
 		
-		curses.curs_set(1)
+		curses_set_cursor(1)
 		self.updateCursor()
 		while 1:
 			self.redraw()
@@ -173,7 +173,7 @@ class InputDialog:
 				if (self.cursor_fld == len(self.attrs)):
 					self.cursor_fld = FLD_SUBMIT
 		
-		curses.curs_set(0)
+		curses_set_cursor(0)
 
 
 

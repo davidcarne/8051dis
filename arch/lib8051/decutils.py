@@ -1,3 +1,6 @@
+from arch.shared_opcode_types import *
+from arch.shared_mem_types import *
+
 class DictProxy(object):
 	def __init__(self,**args):
 		if "length" in args and "dests" in args and "pc" in args:
@@ -22,6 +25,7 @@ class ProgramMemoryIndirectAddressingOperand:
 		self.from_pc = from_pc
 	def __str__(self):
 		return "@a + %s" % ({False: "dptr", True: "pc"}[self.from_pc])
+		
 class DptrOperand:
 	def __str__(self):
 		return "dptr"
@@ -122,12 +126,3 @@ a_PMAI = ProgramMemoryIndirectAddressingOperand
 
 a_PC = PCJmpDestination
 
-class AssemblyEncoding(object):
-	def __init__(self, opcode, *operands):
-		self.opcode = opcode
-		self.operands = operands
-
-	def __str__(self):
-		return "%s\t%s" % (self.opcode, ", ".join([str(i) for i in self.operands]))
-
-AE = AssemblyEncoding

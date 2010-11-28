@@ -212,7 +212,7 @@ def decode(pc, bytes):
 	if opc == 0xC4:
 		return decode_swap(pc, opc)
 	if opc == 0xA5:
-		return decode_undef(pc, opc)
+		return None
 	if opc >= 0xC6 and opc <= 0xC7:
 		return decode_xch_ind(pc, opc)
 	if opc >= 0xC8 and opc <= 0xCF:

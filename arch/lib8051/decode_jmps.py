@@ -6,7 +6,7 @@ def decode_acall_ajmp(pc, opc, addrl):
 
 	return DictProxy(
 				addr = pc,
-				dests = [],
+				dests = [calc_addr, pc+2] if wtype == "call" else [calc_addr],
 				disasm = AE("a%s" % wtype, a_PC(calc_addr)),
 				length = 2,
 				cycles = 2

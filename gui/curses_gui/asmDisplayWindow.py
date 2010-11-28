@@ -1,5 +1,5 @@
 import curses
-from  lib8051.decutils import PCJmpDestination
+#from  arch.opcodetypes import PCJmpDestination
 
 IND_ADDR = 0
 IND_XREF = 1
@@ -26,6 +26,7 @@ class AssemblerDisplay:
 		self.scr.bkgd(' ', self.colors_nohil[IND_ADDR])
 
 		scr = self.scr
+		self.seladdr = None
 
 
 		self.window_base = None
@@ -150,12 +151,14 @@ class AssemblerDisplay:
 			
 			draw_col = lcol[IND_DISASM_OPC]
 
-			if isinstance(i, PCJmpDestination):
-				try:
-					l = self.datasource[i.addr].label
-					draw_col = lcol[IND_LABEL]
-					if l: toDraw = l
-				except KeyError: pass
+
+			# TODO: restore functionality 
+			#if isinstance(i, PCJmpDestination):
+			#	try:
+			#		l = self.datasource[i.addr].label
+			#		draw_col = lcol[IND_LABEL]
+			#		if l: toDraw = l
+			#	except KeyError: pass
 
 			self.addstr(line + disasmLine, cpos, toDraw , draw_col)
 

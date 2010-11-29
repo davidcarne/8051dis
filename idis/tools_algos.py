@@ -84,11 +84,11 @@ def xrefsPass(ds):
 		ds[i].xrefs = []
 	
 	for i in ds.addrs():
-		if i.typeclass != "code": continue
+		if ds[i].typeclass != "code": continue
 		
 		try:
 			insn = ds[i].cdict["decoding"]
-			dests = insn.dests
+			dests = insn["dests"]
 		except KeyError: continue
 		
 		for j in dests:

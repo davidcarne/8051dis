@@ -1,3 +1,7 @@
+# Operands that follow after an instruction / pseudo op
+#
+# Some of the 8051 specific ones need to be pushed here / subclassed in the 8051 code
+
 TYPE_UNSPEC = 0
 TYPE_SYMBOLIC = 1
 TYPE_DEST_INVALID = 2
@@ -8,7 +12,10 @@ class Operand(object):
 
 	def __str__(self):
 		return self.render(None)[0]
-		
+
+# Numeric constant of arbitrary size and representation
+# Some 8051 operands should be made subclasses of this to allow format to be changed
+
 class ArbitraryNumeric(Operand):
 	def __init__(self, vals, fmt):
 		width = fmt["width"]

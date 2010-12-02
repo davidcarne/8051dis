@@ -5,7 +5,9 @@ def decode_numeric(ds, addr, width=8, big_endian=False, signed="UNSIGNED"):
 	
 	if width == 8:
 		big_endian = False
-		
+
+	# Some of the saved_params need to be pushed down to the operand level
+	# For example - signed is a property of the representation, not the memory location		
 	saved_params = {
 		"width": width,
 		"big_endian": big_endian,

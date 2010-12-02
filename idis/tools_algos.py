@@ -55,8 +55,17 @@ def codeFollow(ds, arch, entry_point):
 		# If we can't decoded it, leave as is
 		if not insn:
 			continue
-			
-		q.extend([i for i in insn["dests"] ])
+		
+		# Make sure memory is clear
+		mem_clear = True
+		for i in xrange(insn["length"]):
+			try:
+				if ds[pc + i].typeclass != "default" : mem_clear = False
+			except KeyError: pass
+		if not mem_clear: continue
+		
+		# Add destinations
+		q.extend(insn["dests"])
 
 		# Carry over old label and comment
 		old_mem = ds[pc]

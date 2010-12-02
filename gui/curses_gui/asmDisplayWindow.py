@@ -1,5 +1,5 @@
 import curses
-#from  arch.opcodetypes import PCJmpDestination
+from  arch.shared_opcode_types import TYPE_SYMBOLIC, TYPE_DEST_INVALID
 
 IND_ADDR = 0
 IND_XREF = 1
@@ -147,18 +147,15 @@ class AssemblerDisplay:
 			first = False
 
 
-			toDraw = str(i)
+			toDraw, optype = i.render(self.datasource)
 			
 			draw_col = lcol[IND_DISASM_OPC]
 
 
-			# TODO: restore functionality 
-			#if isinstance(i, PCJmpDestination):
-			#	try:
-			#		l = self.datasource[i.addr].label
-			#		draw_col = lcol[IND_LABEL]
-			#		if l: toDraw = l
-			#	except KeyError: pass
+			if optype == TYPE_SYMBOLIC:
+				draw_col = lcol[IND_LABEL]
+			elif optype == TYPE_DEST_INVALID:
+				draw_col = lcol[IND_SRCMARK]
 
 			self.addstr(line + disasmLine, cpos, toDraw , draw_col)
 

@@ -1,5 +1,15 @@
+TYPE_UNSPEC = 0
+TYPE_SYMBOLIC = 1
+TYPE_DEST_INVALID = 2
 
-class ArbitraryNumeric(object):
+class Operand(object):
+	def __init__(self):
+		pass
+
+	def __str__(self):
+		return self.render(None)[0]
+		
+class ArbitraryNumeric(Operand):
 	def __init__(self, vals, fmt):
 		width = fmt["width"]
 		signed = fmt["signed"]
@@ -25,24 +35,24 @@ class ArbitraryNumeric(object):
 		
 		self.value = numeric_val
 	
-	def __str__(self):
-		return "%#x" % self.value
+	def render(self, ds=None):
+		return "%#x" % self.value, TYPE_UNSPEC
 		
 # Only used as argument to directives
-class StringOperand(object):
+class StringOperand(Operand):
 	def __init__(self, val):
 		self.val = val
 		
-	def __str__(self):
-		return "\"%s\"" % self.val
+	def render(self, ds=None):
+		return "\"%s\"" % self.val, TYPE_UNSPEC
 		
-class AssemblyEncoding(object):
+class AssemblyEncoding(Operand):
 	def __init__(self, opcode, *operands):
 		self.opcode = opcode
 		self.operands = operands
 
-	def __str__(self):
-		return "%s\t%s" % (self.opcode, ", ".join([str(i) for i in self.operands]))
+	def render(self, ds=None):
+		return "%s\t%s" % (self.opcode, ", ".join([str(i) for i in self.operands])), TYPE_UNSPEC
 
 
 AE = AssemblyEncoding

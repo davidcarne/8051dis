@@ -73,6 +73,7 @@ def codeFollow(ds, arch, entry_point):
 		# Carry over old label and comment
 		old_mem = ds[pc]
 		m = MemoryInfo.createFromDecoding(insn)
+		m.ds = ds
 		m.comment = old_mem.comment
 		m.label = old_mem.label
 		

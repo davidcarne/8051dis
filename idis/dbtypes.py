@@ -1,7 +1,12 @@
 from dbtypes import *
-
 from arch import getDecoder
 
+
+class CommentPosition:
+	POSITION_BEFORE = 0
+	POSITION_RIGHT = 1
+	POSITION_BOTTOM = 2
+	
 class proxy_dict(dict):
 	def __getstate__(self):
 		return dict([i for i in self.__dict__.items() if i[0] != 'parent'])
@@ -92,6 +97,12 @@ class MemoryInfo(object):
 						disasm=decoding["disasm"])
 						
 		m.cdict["decoding"] = decoding
+		
+		try:
+			m.persist_attribs["saved_params"] = decoding["saved_params"]
+		except KeyError:
+			pass
+			
 		return m
 		
 		
@@ -117,8 +128,17 @@ class MemoryInfo(object):
 	# Text form of the decoding [TODO: rename?]
 	disasm = SUD("_disasm")
 	
-	# functionality comment
-	comment = SUD("_comment")
+	# Check comments against the main DB
+	def __setcomment(self, text):
+	
+		self.ds.comments.setComment(self.addr, text, CommentPosition.POSITION_RIGHT)		
+	def __getcomment(self):
+		comment = self.ds.comments.getComments(self.addr, position=CommentPosition.POSITION_RIGHT)
+		if not comment:
+			return ""
+		return comment[0]
+		
+	comment = property(__getcomment, __setcomment)
 	
 	# General type of the data
 	# Currently two valid values ["code", "data"]
@@ -132,21 +152,40 @@ class MemoryInfo(object):
 	# Actual type of the data
 	typename = SUD("_typename")
 
-	# TODO: label goes away, sets should insert/update a symbol ent
-	# in a separate table, reads should check that table, so proxy obj
-	label = SUD("_label")
+	# Check symbol against main datasource
+	def __setlabel(self, label):
+		self.ds.symbols.setSymbol(self.addr, label)		
+	def __getlabel(self):
+		return self.ds.symbols.getSymbol(self.addr)
+	label = property(__getlabel, __setlabel)
 	
 	def __get_cdict(self): return self.__cdict
 	cdict = property(__get_cdict)
 	
-	def __init__(self, ff, addr, length, typeclass, typename, label = "", comment = "", disasm = None, ds = None):
+	def __init__(self, ff, addr, length, typeclass, typename, disasm = None, ds = None, persist_attribs=None):
+		# legacy
+		self.ds_link = None
+
+		# Create the custom properties dictionary
+		self.__cdict = dict() #proxy_dict(self.push_changes)
 		
+		if not persist_attribs:
+			self.persist_attribs = proxy_dict(self.push_changes)
+		else:
+			self.persist_attribs = persist_attribs
+			
 		if not disasm:
-			decoded = getDecoder(typename)(ds, addr)
+			try:
+				saved_params = persist_attribs["saved_params"]
+			except KeyError:
+				saved_params = {}
+				
+			# re-decode it
+			decoded = getDecoder(typename)(ds, addr, saved_params=saved_params)
 			assert decoded["length"] == length
 			disasm = decoded["disasm"]
-			
-		self._label = label
+			self.cdict["decoding"] = decoded
+					
 		self._addr = addr
 		self._length = length
 		self._disasm = disasm
@@ -155,13 +194,10 @@ class MemoryInfo(object):
 		self._typeclass = typeclass
 		
 		self._typename = typename
-		self._comment = comment
 		
 		# Should go away too
 		self.xrefs = []
 		
-		self.__cdict = proxy_dict(self.push_changes)
-		self.ds_link = None
 
 	def push_changes(self):
 		if (self.ds_link):

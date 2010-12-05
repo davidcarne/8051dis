@@ -29,6 +29,7 @@ def decodeAs(ds, dec_type, memaddr):
 			
 	# Carry over old label and comment
 	m = MemoryInfo.createFromDecoding(params)
+	m.ds = ds
 	m.label = old_mem.label
 	m.comment = old_mem.comment
 	

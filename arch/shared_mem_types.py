@@ -1,6 +1,6 @@
 from shared_opcode_types import *
 
-def decode_numeric(ds, addr, width=8, big_endian=False, signed="UNSIGNED"):
+def decode_numeric(ds, addr, saved_params = None, width=8, big_endian=False, signed="UNSIGNED"):
 	assert signed in ["UNSIGNED", "TWOSCOMP", "ONESCOMP"]
 	
 	if width == 8:
@@ -8,11 +8,12 @@ def decode_numeric(ds, addr, width=8, big_endian=False, signed="UNSIGNED"):
 
 	# Some of the saved_params need to be pushed down to the operand level
 	# For example - signed is a property of the representation, not the memory location		
-	saved_params = {
-		"width": width,
-		"big_endian": big_endian,
-		"signed": signed
-		}
+	if not saved_params:
+		saved_params = {
+			"width": width,
+			"big_endian": big_endian,
+			"signed": signed
+			}
 		
 	bytecount = width/8
 	try:
@@ -39,42 +40,58 @@ def decode_numeric(ds, addr, width=8, big_endian=False, signed="UNSIGNED"):
 			 "saved_params": saved_params }
 		
 	
-def decode_ascii_string(ds, startaddr):
+def decode_ascii_string(ds, startaddr, saved_params={}):
+	
 	
 	str_buf = ""
 	has_zero_term = False
 	
 	addr = startaddr
-	while 1:
-		# Make sure we don't run off the end of memory
-		try:
-			mem = ds.readBytes(addr, 1)[0]
-		except IndexError:
-			break
-		
-		# If that location already has data defined
-		try:
-			old_loc_data = ds[addr]
-			if not old_loc_data.typeclass == "default":
+	if not saved_params:
+		while 1:
+			# Make sure we don't run off the end of memory
+			try:
+				mem = ds.readBytes(addr, 1)[0]
+			except IOError:
 				break
-			if old_loc_data.label:
+			
+			# If that location already has data defined
+			try:
+				old_loc_data = ds[addr]
+				if not old_loc_data.typeclass == "default":
+					break
+				if old_loc_data.label:
+					break
+					
+			except IndexError:
+				pass
+			
+			addr += 1
+			
+			if mem == 0x00:
+				has_zero_term = True
 				break
-				
-		except IndexError:
-			pass
+			
+			str_buf += chr(mem)
+
+	else:
+		# restore the params the string was created with
+		addr = end_addr = saved_params["end_addr"]
+		has_zero_term = saved_params["has_zero_term"]
 		
-		addr += 1
-		
-		if mem == 0x00:
-			has_zero_term = True
-			break
-		
-		str_buf += chr(mem)
+		# read the string from memory
+		calc_end = end_addr - 1 if has_zero_term else end_addr
+		str_buf = "".join([chr(i) for i in ds.readBytes(startaddr, calc_end-startaddr)])
+	
 
 	def charFilter(a):
 		return a.isalnum() or a in "_"
 		
 	lab = "".join([i for i in str_buf if charFilter(i)])
+	saved_params = {
+		"end_addr": addr,
+		"has_zero_term": has_zero_term
+	}
 	
 	return { "addr": startaddr,
 			 "length": addr - startaddr,
@@ -82,7 +99,7 @@ def decode_ascii_string(ds, startaddr):
 			 "suggested_label": "a%s" % lab,
 			 "typeclass" : "data",
 			 "typename": "astring",
-			 "saved_params": None }
+			 "saved_params": saved_params }
 			 
 decoderTypes = {
 	"astring" : decode_ascii_string

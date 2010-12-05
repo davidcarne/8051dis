@@ -5,7 +5,49 @@ from dbtypes import *
 from arch.shared_mem_types import *
 
 
+class CommentList(object):
+	def __init__(self, connection, table):
+		self.conn = connection
+		
+	def __len__(self):
+		return self.conn.execute('''SELECT COUNT(*) FROM comments''' % table).fetchall()[0]
 
+	# Objects are only temporary, don't keep around
+	def getComments(self, addr, position=None):
+		if position == None:
+			return self.conn.execute('''SELECT text, position FROM comments WHERE addr = ?''', (addr,)).fetchall()
+		return self.conn.execute('''SELECT text FROM comments WHERE addr = ? AND position = ?''', (addr, position)).fetchone()
+	
+	def setComment(self, addr, text, position):
+		self.conn.execute('''DELETE FROM comments WHERE addr=? AND position=?''',
+		   	  (addr,position))
+			  
+		if text:
+			self.conn.execute('''INSERT INTO comments (addr, text, position) VALUES (?,?,?)''',
+				(addr,text,position))
+				
+class SymbolList(object):
+	def __init__(self, connection, table):
+		self.conn = connection
+		
+	def __len__(self):
+		return self.conn.execute('''SELECT COUNT(*) FROM symbols''' % table).fetchall()[0]
+
+	# Objects are only temporary, don't keep around
+	def getSymbol(self, addr):
+		try:
+			return str(self.conn.execute('''SELECT name FROM symbols WHERE addr = ?''', (addr,)).fetchall()[0][0])
+		except IndexError:
+			return None
+	
+	def setSymbol(self, addr, text):
+		self.conn.execute('''DELETE FROM symbols WHERE addr=?''',
+		   	  (addr,))
+			  
+		if text:
+			self.conn.execute('''INSERT INTO symbols (addr, name) VALUES (?,?)''',
+				(addr,text))
+			  
 class DataStore:
 	def __init__(self, filename):
 		self.updates = 0
@@ -17,8 +59,6 @@ class DataStore:
 		self.meminfo_failures = 0
 		
 		self.conn = sqlite3.connect(filename)
-		self.conn.execute("PRAGMA synchronous = OFF")
-		self.conn.execute("PRAGMA journal_mode = OFF")
 		self.c = self.conn.cursor()
 		self.createTables()
 
@@ -31,7 +71,8 @@ class DataStore:
 		self.memory_info_insert_queue = []
 		self.memory_info_insert_queue_ignore = set()
 
-	
+		self.symbols = SymbolList(self.conn, "symbols")
+		self.comments = CommentList(self.conn, "comments")
 	def addrs(self):
 		self.flushInsertQueue()
 
@@ -62,6 +103,7 @@ class DataStore:
 		raise IOError, "no segment could handle the requested read"
 
 	def createTables(self):
+		# Attrs/obj is a dumped representation of a dict
 		self.c.execute('''
 			CREATE TABLE IF NOT EXISTS memory_info
 				(addr		INTEGER CONSTRAINT addr_pk PRIMARY KEY,
@@ -74,6 +116,23 @@ class DataStore:
 			CREATE TABLE IF NOT EXISTS segments
 				(base_addr INTEGER CONSTRAINT base_addr_pk PRIMARY KEY,
 				obj BLOB)''')
+
+		self.c.execute('''
+			CREATE TABLE IF NOT EXISTS symbols
+				(addr INTEGER CONSTRAINT base_addr_pk PRIMARY KEY,
+				name VARCHAR(100),
+				type INTEGER,
+				attrs BLOB
+				)''')
+		
+		
+		self.c.execute('''
+			CREATE TABLE IF NOT EXISTS comments
+				(addr INTEGER,
+				text VARCHAR(100),
+				position INTEGER,
+				CONSTRAINT pk PRIMARY KEY (addr,position)
+				)''')
 
 	def __iter__(self):
 		self.flushInsertQueue()
@@ -140,6 +199,7 @@ class DataStore:
 			raise KeyError
 			
 		mi.typeclass = "default"
+		mi.ds = self
 		self[addr] = mi
 		return mi
 	
@@ -157,7 +217,7 @@ class DataStore:
 			self.flushInsertQueue()
 		
 			# No, fetch from DB
-			row = self.c.execute('''SELECT * 
+			row = self.c.execute('''SELECT addr,length,typeclass,typename,obj 
 					FROM memory_info 
 					WHERE addr <= ? ORDER BY addr DESC LIMIT 1''',
 				  (addr,)).fetchone()
@@ -176,15 +236,17 @@ class DataStore:
 				
 			self.meminfo_misses += 1
 			
-			obj = MemoryInfo("key", row[0], row[1], row[2], row[3], ds=self)
+			obj = MemoryInfo("key", row[0], row[1], row[2], row[3], persist_attribs=loads(str(row[4])), ds=self)
 			
 			obj.ds_link = self.__changed
-
+			obj.ds = self
+			
 			self.memory_info_cache[addr] = obj
 			assert obj.addr == addr
 			return obj
 
 	def __setitem__(self, addr, v):
+		v.ds = self
 		v.ds_link = self.__changed
 		assert v.addr == addr
 		try:
@@ -236,8 +298,8 @@ class DataStore:
 		self.updates += 1
 		self.flushInsertQueue()
 		
-		self.c.execute('''UPDATE memory_info SET length=?, typeclass=?, typename=? WHERE addr=?''',
-		   	  (value.length, value.typeclass, value.typename, addr))
+		self.c.execute('''UPDATE memory_info SET length=?, typeclass=?, typename=?, obj=? WHERE addr=?''',
+		   	  (value.length, value.typeclass, value.typename, dumps(value.persist_attribs), addr))
 		pass
 
 	def flushInsertQueue(self):
@@ -246,7 +308,7 @@ class DataStore:
 			if addr in self.memory_info_insert_queue_ignore:
 				continue
 			obj = self.memory_info_cache[addr]
-			param_l = (obj.addr, obj.length, obj.typeclass, obj.typename, None)
+			param_l = (obj.addr, obj.length, obj.typeclass, obj.typename, dumps(obj.persist_attribs))
 			params.append(param_l)
 
 		self.memory_info_insert_queue_ignore = set()
@@ -260,6 +322,7 @@ class DataStore:
 			)
 		
 	def flush(self):
+		self.flushInsertQueue()
 		self.commits += 1
 		self.conn.commit()
 

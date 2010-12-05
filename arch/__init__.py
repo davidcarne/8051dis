@@ -11,3 +11,9 @@ def architectureFactory(archname):
 
 def architectureNames():
 	return architecture_list.names()
+
+def getDecoder(dec_type):
+	try:
+		return shared_mem_types.decoderTypes[dec_type]
+	except KeyError:
+		return architectureFactory(dec_type).decode

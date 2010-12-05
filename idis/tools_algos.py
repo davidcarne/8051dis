@@ -49,9 +49,12 @@ def codeFollow(ds, arch, entry_point):
 		# TODO: HACK: 6 repeated 0xFF's = uninited mem
 		if all([i==0xFF for i in fetched_mem]):
 			continue
-			
-		insn = arch.decode(pc, fetched_mem)
 		
+		try:
+			insn = arch.decode(ds, pc)
+		except IOError:
+			continue
+			
 		# If we can't decoded it, leave as is
 		if not insn:
 			continue

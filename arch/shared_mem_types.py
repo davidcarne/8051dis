@@ -88,5 +88,3 @@ decoderTypes = {
 	"astring" : decode_ascii_string
 	}
 	
-def getDecoder(dec_type):
-	return decoderTypes[dec_type]

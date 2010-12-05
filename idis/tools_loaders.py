@@ -1,14 +1,5 @@
 from dbtypes import *
 from arch.shared_mem_types import *
-
-def createDefaults(ds, base_addr, length):
-	#assert False
-	
-	for addr in xrange(base_addr, base_addr + length):
-		mi = MemoryInfo.createFromDecoding(decode_numeric(ds, addr))
-		mi.typeclass = "default"
-		ds[addr] = mi
-	
 	
 def addBinary(ds, file, base_addr, start_offset, length):
 	# Load the file
@@ -23,9 +14,7 @@ def addBinary(ds, file, base_addr, start_offset, length):
 
 	seg = Segment(file_data[start_offset:end_offset], base_addr)
 	ds.addSegment(seg)
-
-	createDefaults(ds, base_addr, dis_len)
-
+	
 def parseIhexLine(line):
 	if line[0] != ':':
 		print "Start char fail!"

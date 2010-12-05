@@ -1,5 +1,8 @@
 import opcode_8051
 
+def hack_8051_decode(ds, addr):
+	return opcode_8051.decode(addr, ds.readBytes(addr, 5))
+	
 class Arch8051(object):
 	maxInsnLength = 6
-	decode = staticmethod(opcode_8051.decode)
+	decode = staticmethod(hack_8051_decode)

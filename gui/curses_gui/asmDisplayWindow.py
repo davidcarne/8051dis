@@ -51,6 +51,7 @@ class AssemblerDisplay:
 		elif c == curses.KEY_DOWN:
 			try:
 				next_addr = self.datasource[self.seladdr].length + self.seladdr
+							
 				if next_addr in self.datasource:
 					self.seladdr = next_addr
 
@@ -134,7 +135,7 @@ class AssemblerDisplay:
 			return linesToDraw
 
 		if type(meminfo.disasm) == str:
-			raise ValueError, meminfo.disasm
+			raise ValueError, "Disassembled was: %s - typeclass: %s name: %s" % (meminfo.disasm, meminfo.typeclass, meminfo.typename)
 
 		self.addstr(line + disasmLine, self.opcodeCol, meminfo.disasm.opcode, lcol[IND_DISASM_OPC])
 

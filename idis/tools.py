@@ -12,7 +12,6 @@ from tools_loaders import *
 def undefine(ds, addr):
 	l = ds[addr].length
 	del ds[addr]
-	createDefaults(ds, addr, l)
 
 def decodeAs(ds, dec_type, memaddr):
 	old_mem = ds[memaddr]

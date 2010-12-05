@@ -1,5 +1,7 @@
 from dbtypes import *
 
+from arch import getDecoder
+
 class proxy_dict(dict):
 	def __getstate__(self):
 		return dict([i for i in self.__dict__.items() if i[0] != 'parent'])
@@ -38,20 +40,36 @@ class SUD(object):
 
 class Segment(object):
 	def __init__(self, data, base_addr):
-		self.data = data
-		self.base_addr = base_addr
+		self.__data = data
+		self.__base_addr = base_addr
 
-	def getLength(self):
-		return len(self.data)
 
+	def __getlength(self):
+		return len(self.__data)
+	length = property(__getlength)
+	
+	def __getbaseaddr(self):
+		return self.__base_addr
+	base_addr = property(__getbaseaddr)
+	
 	def readBytes(self, start, length = 1):
-		if (start < self.base_addr or start > self.base_addr + self.length):
+		if (start < self.__base_addr or start >= self.__base_addr + self.__getlength()):
 			raise IOError, "not in segment"
-		return self.data[start-self.base_addr:start-self.base_addr+length]
+		return self.__data[start-self.__base_addr:start-self.__base_addr+length]
 
-	length = property(getLength)
-
-
+class Symbol(object):
+	TYPE_LOCAL = 0
+	TYPE_FNENT = 1
+	TYPE_MULTIUSE = 2
+	
+	def __init__(self, datastore, address, name, type = TYPE_LOCAL):
+			self.ds = datastore
+			self.address = address
+			self.name = name
+			self.type = type
+	
+	def __str__(self):
+		return self.name
 
 class MemoryInfo(object):
 
@@ -66,11 +84,12 @@ class MemoryInfo(object):
 			for i in required_nouns:
 				assert i in decoding, "No noun %s in supplied arg type: %s" %(i, type(decoding))
 
-		m = MemoryInfo(	addr=decoding["addr"],
+		m = MemoryInfo(	"key",
+						addr=decoding["addr"],
 						length=decoding["length"],
-						disasm=decoding["disasm"],
 						typeclass=decoding["typeclass"],
-						typename=decoding["typename"])
+						typename=decoding["typename"],
+						disasm=decoding["disasm"])
 						
 		m.cdict["decoding"] = decoding
 		return m
@@ -105,6 +124,7 @@ class MemoryInfo(object):
 	# Currently two valid values ["code", "data"]
 	def __validate_typeclass(value):
 		return value in ["code", "data", "default"]
+	
 	typeclass = SUD("_typeclass", __validate_typeclass)
 	__validate_typeclass = staticmethod(__validate_typeclass)
 	
@@ -119,7 +139,13 @@ class MemoryInfo(object):
 	def __get_cdict(self): return self.__cdict
 	cdict = property(__get_cdict)
 	
-	def __init__(self, addr, length, disasm, typeclass, typename, label = "", comment = ""):
+	def __init__(self, ff, addr, length, typeclass, typename, label = "", comment = "", disasm = None, ds = None):
+		
+		if not disasm:
+			decoded = getDecoder(typename)(ds, addr)
+			assert decoded["length"] == length
+			disasm = decoded["disasm"]
+			
 		self._label = label
 		self._addr = addr
 		self._length = length
